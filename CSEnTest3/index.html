@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta content="Cave Story - 洞窟物語" property="og:title">
+    <meta content="Play indie masterpiece in your browser." property="og:description">
+    <meta content="https://cavestory.gitlab.io/icon.png" property='og:image'>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/>
+    <link rel="manifest" href="/appmanifest.json">
+    <script async src="https://unpkg.com/pwacompat" crossorigin="anonymous"></script>
+    <title>Cave Story</title>
+    <style>
+      body {
+        background-color: black;
+        color: white;
+        font-family: 'Courier New', monospace;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      canvas.emscripten {
+        border: 0 none;
+        /*width: 320px;
+        height: 240px;*/
+        width: 100%;
+        height: 100%;
+        /*image-rendering: crisp-edges;*/
+        object-fit: contain;
+      }
+      .centerbox {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+      }
+
+      .dlbox-inner {
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 256px;
+        height: 64px;
+        background-color: #000033;
+      }
+
+      .control-left {
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        position: fixed;
+        left: 16px;
+        bottom: 16px;
+      }
+
+      .control-top-right {
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        position: fixed;
+        right: 16px;
+        top: 16px;
+      }
+      
+      .control-right {
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+      }
+
+
+      .control-btn-small, .control-btn-big {
+        opacity: 0.4;
+      }
+
+      .control-btn-small {
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        background-image: url("button.png");
+        background-position: 0px 0px;
+        background-repeat: no-repeat;
+      }
+
+      .control-btn-small:active {
+        background-position: 0px -128px;
+      }
+
+      .control-btn-big {
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 64px;
+        background-image: url("button.png");
+        background-position: -64px 0px;
+        background-repeat: no-repeat;
+      }
+
+      .control-btn-big:active {
+        background-position: -64px -128px;
+      }
+
+     /* @media screen and (min-width: 640px) and (min-height: 480px) {
+        canvas.emscripten {
+          width: 640px;
+          height: 480px;
+        }
+      }
+      @media screen and (min-width: 960px) and (min-height: 720px) {
+        canvas.emscripten {
+          width: 960px;
+          height: 720px;
+        }
+      }
+      @media screen and (min-width: 1280px) and (min-height: 960px) {
+        canvas.emscripten {
+          width: 1280px;
+          height: 960px;
+        }
+      }*/
+    </style>
+  </head>
+  <body>
+    <div class="centerbox">
+      <div class="dlbox-inner">
+        <div class="emscripten" id="status">Downloading...</div>
+        <div class="emscripten">
+          <progress value="0" max="100" id="progress"></progress>
+        </div>
+      </div>
+    </div>
+    <div class="centerbox">
+      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    </div>
+    <div class="control-left">
+      <div class="control-btn-small" id="c-up" style="margin-left: 74px" oncontextmenu="event.preventDefault()"></div>
+      <br/>
+      <div class="control-btn-small" id="c-left" oncontextmenu="event.preventDefault()"></div>
+      <div class="control-btn-small" id="c-down" oncontextmenu="event.preventDefault()"></div>
+      <div class="control-btn-small" id="c-right" oncontextmenu="event.preventDefault()"></div>
+    </div>
+    <div class="control-top-right">
+	    <div class="control-btn-small" id="c-prev" oncontextmenu="event.preventDefault()">◀️</div>
+      <div class="control-btn-small" id="c-next" oncontextmenu="event.preventDefault()">▶️</div>
+      <div class="control-btn-small" id="c-inv" oncontextmenu="event.preventDefault()">Inv</div>
+    </div>
+    <div class="control-right">
+      <div class="control-btn-small" id="c-shoot" oncontextmenu="event.preventDefault()">Shoot</div>
+      <div class="control-btn-big" id="c-select" oncontextmenu="event.preventDefault()">Jump</div>
+    </div>
+    <script type='text/javascript'>
+      var cUp = document.getElementById("c-up");
+      var cDown = document.getElementById("c-down");
+      var cLeft = document.getElementById("c-left");
+      var cRight = document.getElementById("c-right");
+      var cShoot = document.getElementById("c-shoot");
+      var cInv = document.getElementById("c-inv");
+      var cPrev = document.getElementById("c-prev");
+      var cNext = document.getElementById("c-next");
+      var cSelect = document.getElementById("c-select");
+      var statusElement = document.getElementById('status');
+      var progressElement = document.getElementById('progress');
+      var Module = {
+        preRun: [],
+        postRun: [],
+        print: (function () {
+          return function (text) {
+            if (arguments.length > 1) 
+              text = Array
+                .prototype
+                .slice
+                .call(arguments)
+                .join(' ');
+            
+            console.log(text);
+          };
+        })(),
+        printErr: function (text) {
+          if (arguments.length > 1) 
+            text = Array
+              .prototype
+              .slice
+              .call(arguments)
+              .join(' ');
+          console.error(text);
+        },
+        canvas: (function () {
+          var canvas = document.getElementById('canvas');
+          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+          // application robust, you may want to override this behavior before shipping!
+          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+          canvas.addEventListener("webglcontextlost", function (e) {
+            alert('WebGL context lost. You will need to reload the page.');
+            e.preventDefault();
+          }, false);
+          return canvas;
+        })(),
+        setStatus: function (text) {
+          if (!Module.setStatus.last) 
+            Module.setStatus.last = {
+              time: Date.now(),
+              text: ''
+            };
+          if (text === Module.setStatus.last.text) 
+            return;
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+          var now = Date.now();
+          if (m && now - Module.setStatus.last.time < 30) 
+            return; // if this is a progress update, skip it if too soon
+          Module.setStatus.last.time = now;
+          Module.setStatus.last.text = text;
+          if (m) {
+            text = m[1];
+            progressElement.value = parseInt(m[2]) * 100;
+            progressElement.max = parseInt(m[4]) * 100;
+            progressElement.hidden = false;
+          } else {
+            progressElement.value = null;
+            progressElement.max = null;
+            progressElement.hidden = true;
+            statusElement.innerHTML = text;
+          }
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function (left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(
+            left
+            ? 'Preparing... (' + (
+            this.totalDependencies - left) + '/' + this.totalDependencies + ')'
+            : 'All downloads complete.');
+        }
+      };
+      screen
+        .orientation
+        .lock('landscape');
+      Module.setStatus('Downloading...');
+      window.onerror = function () {
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = function (text) {
+          if (text) 
+            Module.printErr('[post-exception status] ' + text);
+          };
+      };
+
+      // Work-around chromium autoplay policy
+      // https://github.com/emscripten-core/emscripten/issues/6511
+      function resumeAudio(e) {
+        if (typeof Module === 'undefined' || typeof Module.SDL2 == 'undefined' || typeof Module.SDL2.audioContext == 'undefined') 
+          return;
+        if (Module.SDL2.audioContext.state == 'suspended') {
+          Module
+            .SDL2
+            .audioContext
+            .resume();
+        }
+        if (Module.SDL2.audioContext.state == 'running') {
+          document
+            .getElementById('canvas')
+            .removeEventListener('click', resumeAudio);
+          document.removeEventListener('keydown', resumeAudio);
+        }
+      }
+      document
+        .getElementById('canvas')
+        .addEventListener('click', resumeAudio);
+      document.addEventListener('keydown', resumeAudio);
+    </script>
+    <script async type="text/javascript" src="CSE2.js"></script>
+  </body>
+</html>
