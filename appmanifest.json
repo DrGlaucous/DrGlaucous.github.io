@@ -1,0 +1,12 @@
+{
+    "name": "Cave Story",
+    "categories": ["games"],
+    "start_url": "/CSEnTest3/index.html",
+    "display": "standalone",
+    "orientation": "landscape",
+    "background_color": "#000000",
+    "icons": [{
+      "src": "icon.png",
+      "type": "image/png"
+    }]
+}
