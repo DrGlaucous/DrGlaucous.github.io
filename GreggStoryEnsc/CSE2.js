@@ -1889,7 +1889,7 @@ var tempI64;
 // === Body ===
 
 var ASM_CONSTS = {
-  2151484: function() {FS.mkdir('/offline'); FS.mount(IDBFS, {}, '/offline'); FS.syncfs(true, function (err) { });},  
+  2151484: function() {FS.mkdir('/offlineGS'); FS.mount(IDBFS, {}, '/offlineGS'); FS.syncfs(true, function (err) { });},  
  2151576: function() {FS.syncfs(function (err) { });},  
  2151607: function() {FS.syncfs(function (err) { });},  
  2151638: function($0) {var str = UTF8ToString($0) + '\n\n' + 'Abort/Retry/Ignore/AlwaysIgnore? [ariA] :'; var reply = window.prompt(str, "i"); if (reply === null) { reply = "i"; } return allocate(intArrayFromString(reply), 'i8', ALLOC_NORMAL);},  
